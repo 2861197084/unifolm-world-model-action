@@ -182,12 +182,14 @@ model:
     cond_stage_config:
       target: unifolm_wma.modules.encoders.condition.FrozenOpenCLIPEmbedder
       params:
+        version: 'ckpts/open_clip_pytorch_model.bin'
         freeze: True
         layer: "penultimate"
 
     img_cond_stage_config:
       target: unifolm_wma.modules.encoders.condition.FrozenOpenCLIPImageEmbedderV2
       params:
+        version: 'ckpts/open_clip_pytorch_model.bin'
         freeze: true
 
     image_proj_stage_config:
@@ -222,8 +224,8 @@ data:
     test:
       target: unifolm_wma.data.wma_data.WMAData
       params:
+        data_dir: './examples/world_model_interaction_prompts'
         # data_dir: '/path/to/unifolm-world-model-action/examples/world_model_interaction_prompts'
-        data_dir: './examples/world_model_interaction_prompts
         video_length: ${model.params.wma_config.params.temporal_length}
         frame_stride: 2
         load_raw_resolution: True
