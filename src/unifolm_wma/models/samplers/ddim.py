@@ -17,6 +17,8 @@ class DDIMSampler(object):
         self.schedule = schedule
         self.counter = 0
         self._schedule_cache = None
+        self._action_scheduler_steps = None
+        self._state_scheduler_steps = None
 
     def register_buffer(self, name, attr):
         if type(attr) == torch.Tensor:
@@ -243,11 +245,22 @@ class DDIMSampler(object):
 
         clean_cond = kwargs.pop("clean_cond", False)
 
-        dp_ddim_scheduler_action.set_timesteps(len(timesteps))
-        dp_ddim_scheduler_state.set_timesteps(len(timesteps))
+        timesteps_len = len(timesteps)
+        if self._action_scheduler_steps != timesteps_len:
+            dp_ddim_scheduler_action.set_timesteps(timesteps_len)
+            self._action_scheduler_steps = timesteps_len
+        if self._state_scheduler_steps != timesteps_len:
+            dp_ddim_scheduler_state.set_timesteps(timesteps_len)
+            self._state_scheduler_steps = timesteps_len
+
+        ts_cache = {
+            int(step): torch.full((b, ), int(step), device=device, dtype=torch.long)
+            for step in np.array(timesteps).tolist()
+        }
         for i, step in enumerate(iterator):
             index = total_steps - i - 1
-            ts = torch.full((b, ), step, device=device, dtype=torch.long)
+            step_int = int(step)
+            ts = ts_cache[step_int]
 
             # Use mask to blend noised original latent (img_orig) & new sampled latent (img)
             if mask is not None:
@@ -386,12 +399,14 @@ class DDIMSampler(object):
         else:
             size = (b, 1, 1, 1)
 
-        a_t = torch.full(size, alphas[index], device=device)
-        a_prev = torch.full(size, alphas_prev[index], device=device)
-        sigma_t = torch.full(size, sigmas[index], device=device)
-        sqrt_one_minus_at = torch.full(size,
-                                       sqrt_one_minus_alphas[index],
-                                       device=device)
+        a_t = torch.as_tensor(alphas[index], device=device, dtype=x.dtype)
+        a_prev = torch.as_tensor(alphas_prev[index],
+                     device=device,
+                     dtype=x.dtype)
+        sigma_t = torch.as_tensor(sigmas[index], device=device, dtype=x.dtype)
+        sqrt_one_minus_at = torch.as_tensor(sqrt_one_minus_alphas[index],
+                            device=device,
+                            dtype=x.dtype)
 
         if self.model.parameterization != "v":
             pred_x0 = (x - sqrt_one_minus_at * e_t) / a_t.sqrt()
