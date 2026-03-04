@@ -10,7 +10,7 @@ from typing import Dict, Any, ClassVar, Deque, Mapping, Union
 from datasets.features.features import register_feature
 from torch.utils.tensorboard.writer import SummaryWriter
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
 @dataclass

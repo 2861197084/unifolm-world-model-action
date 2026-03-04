@@ -16,6 +16,7 @@ class DDIMSampler(object):
         self.ddpm_num_timesteps = model.num_timesteps
         self.schedule = schedule
         self.counter = 0
+        self._schedule_cache = None
 
     def register_buffer(self, name, attr):
         if type(attr) == torch.Tensor:
@@ -127,10 +128,13 @@ class DDIMSampler(object):
                         f"Warning: Got {conditioning.shape[0]} conditionings but batch-size is {batch_size}"
                     )
 
-        self.make_schedule(ddim_num_steps=S,
-                           ddim_discretize=timestep_spacing,
-                           ddim_eta=eta,
-                           verbose=schedule_verbose)
+        current_cache = (S, timestep_spacing, float(eta), self.model.device)
+        if self._schedule_cache != current_cache:
+            self.make_schedule(ddim_num_steps=S,
+                               ddim_discretize=timestep_spacing,
+                               ddim_eta=eta,
+                               verbose=schedule_verbose)
+            self._schedule_cache = current_cache
 
         # Make shape
         if len(shape) == 3:
