@@ -164,10 +164,7 @@ output:
 ```text
 python3 psnr_score_for_challenge.py --gt_video path/to/gt/videos --pred_video path/to/pred/video -
 -output_file path/to/output/json
-# For example: python3 psnr_score_for_challenge.py --gt_video
-unitree_g1_pack_camera/case1/unitree_g1_pack_camera_case1.mp4 --pred_video
-unitree_g1_pack_camera/case1/output/inference/0_full_fs6.mp4 --output_file
-unitree_g1_pack_camera/case1/psnr_result.json
+# For example: python3 psnr_score_for_challenge.py --gt_video unitree_g1_pack_camera/case1/unitree_g1_pack_camera_case1.mp4 --pred_video unitree_g1_pack_camera/case1/output/inference/0_full_fs6.mp4 --output_file unitree_g1_pack_camera/case1/psnr_result.json
 ```
 
 This script will generate a JSON file containing a dictionary of the PSNR score for one sample.
